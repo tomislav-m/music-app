@@ -1,15 +1,15 @@
-from sqlalchemy.dialects.postgresql import UUID
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask import Flask
 from sqlalchemy import Table
-from sqlalchemy.orm import relationship
+# from sqlalchemy.orm import relationship
 
 app = Flask(__name__)
 
-DB_URL = 'postgresql://postgres:postgres@localhost:5432/Music'
+DB_URL = 'postgresql://postgres:12345@localhost:5432/music_db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -19,33 +19,60 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
-artist_genres = Table('artist_genres', db.metadata,
-                      db.Column('artist_id', UUID(as_uuid=True), db.ForeignKey('artists.id')),
-                      db.Column('genre_id', UUID(as_uuid=True), db.ForeignKey('genres.id')))
+artist_genre = Table('artist_genre', db.metadata,
+                     db.Column('artist_id', UUID(as_uuid=True),
+                               db.ForeignKey('artist.id'), primary_key=True),
+                     db.Column('genre_id', UUID(as_uuid=True), db.ForeignKey('genre.id'), primary_key=True))
 
-similar_artists = Table('similar_artists', db.metadata,
-                        db.Column('artist1_id', UUID(as_uuid=True), db.ForeignKey('artists.id')),
-                        db.Column('artist2_id', UUID(as_uuid=True), db.ForeignKey('artists.id')),
-                        db.Column('match', db.NUMERIC, default=0))
+album_genre = Table('album_genre', db.metadata,
+                    db.Column('album_id', UUID(as_uuid=True),
+                              db.ForeignKey('album.id'), primary_key=True),
+                    db.Column('genre_id', UUID(as_uuid=True), db.ForeignKey('genre.id'), primary_key=True))
 
 
 class Artist(db.Model):
-    __tablename__ = 'artists'
+    __tablename__ = 'artist'
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True,
+                   default=uuid.uuid4, unique=True, nullable=False)
     name = db.Column(db.String, unique=False, nullable=False)
     image_url = db.Column(db.String, unique=False, nullable=True)
-    mb_id = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True, nullable=True)
+    mb_id = db.Column(UUID(as_uuid=True), default=uuid.uuid4,
+                      unique=True, nullable=True)
     bio = db.Column(db.TEXT, unique=False, nullable=True)
 
-    children = relationship("Child", secondary=artist_genres)
+    albums = db.relationship('Album', backref='artist', lazy=True)
+
+
+class Similar(db.Model):
+    __tablename__ = 'similar_artist'
+
+    artist1_id = db.Column(UUID(as_uuid=True), db.ForeignKey("artist.id"), primary_key=True,
+                           default=uuid.uuid4, unique=False, nullable=False)
+    artist2_id = db.Column(UUID(as_uuid=True), db.ForeignKey("artist.id"), primary_key=True,
+                           default=uuid.uuid4, unique=False, nullable=False)
+    match = db.Column(db.INTEGER, unique=False, nullable=False)
 
 
 class Genre(db.Model):
-    __tablename__ = 'genres'
+    __tablename__ = 'genre'
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True,
+                   default=uuid.uuid4, unique=True, nullable=False)
     name = db.Column(db.String, unique=True, nullable=False)
+
+
+class Album(db.Model):
+    __tablename__ = 'album'
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True,
+                   default=uuid.uuid4, unique=True, nullable=False)
+    name = db.Column(db.String, unique=False, nullable=False)
+    artist_id = db.Column(UUID(as_uuid=True), db.ForeignKey(
+        'artist.id'), default=uuid.uuid4, unique=False, nullable=False)
+    image_url = db.Column(db.String, unique=False, nullable=True)
+    mb_id = db.Column(UUID(as_uuid=True), default=uuid.uuid4,
+                      unique=True, nullable=True)
 
 
 if __name__ == '__main__':
