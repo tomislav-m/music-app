@@ -1,6 +1,8 @@
 from database import Artist, Similar, db
 from typing import List
 
+PAGE_SIZE = 100
+
 
 def get_artist(name) -> Artist:
     artist = Artist.query.filter_by(name=name).first()
@@ -11,12 +13,21 @@ def get_all_artists() -> List[Artist]:
     return Artist.query.all()
 
 
+def get_artists(page: int = 1, page_size: int = PAGE_SIZE) -> List[Artist]:
+    return Artist.query.limit(page_size).offset((page-1)*PAGE_SIZE)
+
+
 def artist_exist(name):
     return (get_artist(name) is not None)
 
 
 def insert_artists(artists):
     db.session.add_all(artists)
+    db.session.commit()
+
+
+def insert_artist(artist):
+    db.session.add(artist)
     db.session.commit()
 
 

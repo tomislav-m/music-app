@@ -40,6 +40,7 @@ class Artist(db.Model):
     mb_id = db.Column(UUID(as_uuid=True), default=uuid.uuid4,
                       unique=True, nullable=True)
     bio = db.Column(db.TEXT, unique=False, nullable=True)
+    spotify_id = db.Column(db.String, unique=False, nullable=True)
 
     albums = db.relationship('Album', backref='artist', lazy=True)
 
@@ -71,8 +72,10 @@ class Album(db.Model):
     artist_id = db.Column(UUID(as_uuid=True), db.ForeignKey(
         'artist.id'), default=uuid.uuid4, unique=False, nullable=False)
     image_url = db.Column(db.String, unique=False, nullable=True)
+    release_date = db.Column(db.String, unique=False, nullable=True)
     mb_id = db.Column(UUID(as_uuid=True), default=uuid.uuid4,
                       unique=True, nullable=True)
+    spotify_id = db.Column(db.String, unique=False, nullable=True)
 
 
 if __name__ == '__main__':
