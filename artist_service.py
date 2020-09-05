@@ -17,6 +17,10 @@ def get_artists(page: int = 1, page_size: int = PAGE_SIZE) -> List[Artist]:
     return Artist.query.limit(page_size).offset((page-1)*PAGE_SIZE)
 
 
+def save_artist():
+    db.session.commit()
+
+
 def artist_exist(name):
     return (get_artist(name) is not None)
 

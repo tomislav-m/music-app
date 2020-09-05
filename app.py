@@ -1,10 +1,11 @@
 from flask import jsonify
 from mylast import get_library
 import mylast
-from database import app, Artist, Similar, Album
+from database import app, Artist, Similar, Album, Genre
 import artist_service
 import myspotify
 import album_service
+import genre_service
 
 
 @app.route('/')
@@ -97,6 +98,34 @@ def save_albums():
         except Exception as exc_out:
             app.logger.error(exc_out)
     return albums_dict
+
+
+@app.route('/artists_spotify')
+def save_artists_spotify():
+    artists = artist_service.get_artists(1, 3000)
+    genres_arr = []
+    for artist in artists:
+        if len(artist.genres) > 0:
+            continue
+        if artist.spotify_id is None:
+            artists_sp = myspotify.sp.search(
+                artist.name, 1, 0, "artist", market="US")['artists']['items']
+            if len(artists_sp) == 0:
+                continue
+            artist_sp = artists_sp[0]
+            artist.spotify_id = artist_sp['id']
+            if len(artist_sp['images']) > 0:
+                artist.image_url = artist_sp['images'][0]['url']
+            genres = artist_sp['genres']
+            for genre in genres:
+                genre_db = genre_service.get_genre(genre)
+                if genre_db is None:
+                    genres_arr.append(genre)
+                    genre_service.insert_genre(Genre(name=genre))
+                    genre_db = genre_service.get_genre(genre)
+                artist.genres.append(genre_db)
+            artist_service.save_artist()
+    return jsonify(genres_arr)
 
 
 if __name__ == '__main__':

@@ -24,11 +24,6 @@ artist_genre = Table('artist_genre', db.metadata,
                                db.ForeignKey('artist.id'), primary_key=True),
                      db.Column('genre_id', UUID(as_uuid=True), db.ForeignKey('genre.id'), primary_key=True))
 
-album_genre = Table('album_genre', db.metadata,
-                    db.Column('album_id', UUID(as_uuid=True),
-                              db.ForeignKey('album.id'), primary_key=True),
-                    db.Column('genre_id', UUID(as_uuid=True), db.ForeignKey('genre.id'), primary_key=True))
-
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -43,6 +38,7 @@ class Artist(db.Model):
     spotify_id = db.Column(db.String, unique=False, nullable=True)
 
     albums = db.relationship('Album', backref='artist', lazy=True)
+    genres = db.relationship('Genre', backref='artist', secondary=artist_genre)
 
 
 class Similar(db.Model):
