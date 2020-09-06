@@ -5,9 +5,10 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask import Flask
 from sqlalchemy import Table
-# from sqlalchemy.orm import relationship
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 DB_URL = 'postgresql://postgres:12345@localhost:5432/music_db'
 

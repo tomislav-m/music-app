@@ -6,6 +6,7 @@ import artist_service
 import myspotify
 import album_service
 import genre_service
+from schemes import ArtistSchema, AlbumSchema
 
 
 @app.route('/')
@@ -13,7 +14,7 @@ def hello_world():
     return jsonify('Hello')
 
 
-@app.route('/artists')
+@app.route('/save_artists')
 def save_artists():
     users = []
     artists_dict = {}
@@ -39,6 +40,15 @@ def save_artists():
             except Exception:
                 continue
     return artists_dict
+
+
+@app.route('/albums/<date>')
+def get_albums(date):
+    albums = album_service.get_albums_filter(
+        Album.release_date.like(f'%-{date}'))
+    album_schema = AlbumSchema(many=True)
+    dump_data = album_schema.dump(albums)
+    return jsonify(dump_data)
 
 
 @app.route('/similar')

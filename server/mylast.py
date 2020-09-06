@@ -1,7 +1,7 @@
 import pylast
 
-API_KEY = "33b5d6a111174360c909fd901c387f4f"
-API_SECRET = "cc5d7bc36e64f69551cae4dfdcd3f973"
+API_KEY = ""
+API_SECRET = ""
 
 network = pylast.LastFMNetwork(API_KEY, API_SECRET)
 

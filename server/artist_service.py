@@ -14,7 +14,7 @@ def get_all_artists() -> List[Artist]:
 
 
 def get_artists(page: int = 1, page_size: int = PAGE_SIZE) -> List[Artist]:
-    return Artist.query.limit(page_size).offset((page-1)*PAGE_SIZE)
+    return Artist.query.limit(page_size).offset((page-1)*PAGE_SIZE).all()
 
 
 def save_artist():
